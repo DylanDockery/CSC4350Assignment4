@@ -1,21 +1,23 @@
 #Dylan Dockery
-#Server portion of client server spplication
-#libraries needed : socket, argparse, datetime
+#Server to process HTTP GET requests
+#libraries needed : socket, argparse
 #instructions: 
-#Start via commandline. Commandline parameters are as follows: -t --- Communication protocol that can be set to either TCP or UDP. Default is TCP. 
-#-p --- Port used for server. Default is 8000
+#Start via commandline. Commandline parameters are as follows:
+#-p --- Port used for server. Required 
 
 from socket import *
 import argparse
-from datetime import datetime
+
 
 #determines response to client
 def response(requestedResource,HTTPVersion):
-    print(requestedResource)
+
+    #if no resource requested return index.html
     if requestedResource == '/':
         requestedResource='/index.html'
+
+    #attempts to locate the requested resource if succesful it returns 200 and the resource and if not 404
     try:
-        print(requestedResource)
         file1=open(requestedResource[1:],'r')
         HTTPReponse= HTTPVersion+' 200 OK\r\n'
         outputdata=[HTTPReponse]+file1.readlines()
@@ -23,20 +25,21 @@ def response(requestedResource,HTTPVersion):
         HTTPReponse= HTTPVersion+' 404 Not Found\r\n'
         outputdata=[HTTPReponse]
 
-    print(outputdata)
+    #sends resource over connection
     for i in range(0, len(outputdata)):
         connectionSocket.send(outputdata[i].encode())
         connectionSocket.send("\r\n".encode())
 
 
-    
 #command line argmuent declaration
 parser = argparse.ArgumentParser(description='Server')
 parser.add_argument('-p', type=int, default=8000,help='Port used for server. Required', required=True)
 args = parser.parse_args()
 
+#port for the server to use
 serverPort=args.p
 
+#indices for parsing the incoming GET request
 head=0
 HTTPprotocol=0
 requestedResource=1
@@ -48,7 +51,8 @@ print(serverSocket)
 serverSocket.listen(1)
 print("The server is ready to receive")
 while True:
-        
+    
+    #opens socket and processes incoming HTTP requests
     connectionSocket, addr = serverSocket.accept()
     message = connectionSocket.recv(1024).decode()
     request=message.split('\r\n')[0].split(' ')
